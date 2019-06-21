@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 
-      
+
     <!---***********************  CSS *****************************--->
 
     <style>
@@ -36,6 +36,7 @@
       background-color: #ff6961;
     }
 
+    /* no selecting of text inside div */
     .noselect {
       -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -51,15 +52,15 @@
   </head>
 
 
-    
+
 <!---***********************  BODY *****************************--->
 
   <body>
 
     <div class="container-fluid bg-primary py-2 mb-4 text-white">
-        <h1 class="text-center display-4">APIs abfragen und darstellen</h1>   
-    </div>  
-      
+        <h1 class="text-center display-4">APIs abfragen und darstellen</h1>
+    </div>
+
     <div class="container bg-faded">
         <div class="row">
             <div class="col-12 col-lg-6">
@@ -67,7 +68,7 @@
                 <input id="n-namen" type="text" class="form-control" aria-describedby="stadt-help" placeholder="Anzahl ..." value = 10>
                 </span>
             </div>
-            <div class="col-12 col-lg-6">   
+            <div class="col-12 col-lg-6">
                <span class="input-group-btn">
                  <button id="btn-go" type="button" class="btn btn-primary btn-lg">Hinzufügen</button>
                  <button id="btn-send" type="button" class="btn btn-success btn-lg">Auswerten</button>
@@ -78,7 +79,7 @@
         </div>
 
     </div>
-    
+
     <!-- status info -->
     <div class="container bg-faded" >
         <span id="response" class="lead">... waiting</span>
@@ -90,7 +91,7 @@
 
  </body>
 
-    
+
 
 <!---***********************  SCRIPTS *****************************--->
 
@@ -98,11 +99,12 @@
 
 
 // create DOM name element
-function create_name_element(name)
+function create_name_element(obj)
 {
-    
-  //var name = name.replace(/\s/g, '&nbsp;');
-  var el = $("<div class = 'name border noselect rounded'>" + name + "</div>");
+  var el = $("<div class = 'name border noselect rounded'></div>")
+    .html(obj.name)
+    .attr("data-id", obj.id)
+    .attr("data-name", obj.name);
 
   // change class on click
   el.click(function () {
@@ -118,7 +120,8 @@ function create_name_element(name)
 };
 
 
-// get all select names
+
+/* get all select names
 function get_selected_names()
 {
   var selected = $(".name.clicked");
@@ -127,19 +130,32 @@ function get_selected_names()
   }).get()
   return selected_names;
 }
+*/
+
+// get all select names
+function get_selected_names()
+{
+    var selected = $(".name.clicked");
+    var arr = selected.map(function() {
+                return { id : $(this).attr("data-id"),
+                         name : $(this).attr("data-name") };
+              }).get()
+    return arr;
+}
+
 
 
 $(document).ready(function() {
 
-    /* 
+    /*
         add new names when button is clicked
     */
-    
+
     $("#btn-go").click(function() {
         var n_namen = $("#n-namen").val()
 
         $.ajax({
-            url: "http://localhost:8000/names2",
+            url: "http://localhost:8000/names",
             type: "GET",
             crossDomain: true,
             data: {
@@ -148,15 +164,14 @@ $(document).ready(function() {
             dataType: 'json',
             success: function (response) {
               console.log("API /echo call: success");
+              console.log(response);
 
-              // add names to DOM
-                //change to grouping by {id, name}
-              var names = response.names;
-              names.reverse().forEach(function(el, index) {
+              // add names to DOM, response: [{id, name}, {id, name}]
+              response.reverse().forEach(function(el, index) {
                 create_name_element(el).prependTo("#responses");
               })
-                
-            $("#response").html(names.length + " names delivered");
+
+            $("#response").html(response.length + " names delivered");
             },
             error: function (xhr, status) {
                 console.log("API /echo call: error");
@@ -166,10 +181,11 @@ $(document).ready(function() {
     });
 
 
-    /* 
+
+    /*
         collect all clicked names and send to server
     */
-    
+
     $("#btn-send").click(function() {
       var names = get_selected_names();
       console.log(names);
@@ -194,17 +210,18 @@ $(document).ready(function() {
           }
       });
 
-        
+    });
+
     /*
         Reset: remove all divs and start anew
     */
-        
+
     $("#btn-reset").click(function() {
         console.log("RESET names");
         $("#response").html("Delete all names");
         $("#responses .name").remove();
     });
-        
+
       /*
       // send results to server
       $.ajax({
@@ -227,7 +244,6 @@ $(document).ready(function() {
           }
       });
     */
-    });
 
 
     // bind <ENTER> to button execution
