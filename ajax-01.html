@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+
+
+<!--- HEAD ----------------------------------------------------->
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>ajax 01</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <!--- CSS ----------------------------------------------------->
+
+    <style>
+
+    /* DOME name element */
+    .name {
+      background-color: #ddd;
+      margin-left: 5px;
+      margin-right: 5px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .name:hover {
+      background-color: lightblue;
+    }
+
+    .name.clicked {
+      background-color: #ff6961;
+    }
+
+    .noselect {
+      -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+         -khtml-user-select: none; /* Konqueror HTML */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+                user-select: none; /* Non-prefixed version, currently
+                                      supported by Chrome and Opera */
+    }
+
+    </style>
+
+  </head>
+
+
+  <!--- BODY ----------------------------------------------------->
+
+  <body>
+     <h1>APIs abfragen und darstellen</h1>
+
+     <div class="container" >
+       <div class="input-group">
+           <!-- <label for="stadt">Anzahl an neuen Namen</label> -->
+           <input id="n-namen" type="text" class="form-control" aria-describedby="stadt-help" placeholder="Anzahl ..." value = 10>
+           <!-- <small id="stadt-help" class="form-text text-muted">Anzahl an neuen Namen eingeben</small> -->
+           <span class="input-group-btn">
+             <button id="btn-go" type="button" class="btn btn-primary btn-lg">Hinzufügen</button>
+           </span>
+           <span class="input-group-btn">
+             <button id="btn-send" type="button" class="btn btn-success btn-lg">Auswerten</button>
+           </span>
+      </div>
+
+      <span id="response">... waiting</span>
+
+    </div>
+
+    <hr>
+
+    <div class = "container" id = "responses"></div>
+
+ </body>
+
+
+
+ <!--- SCRIPTS ----------------------------------------------------->
+
+<script>
+
+
+// create DOM name element
+function create_name_element(name)
+{
+  var el = $("<span class = 'name border noselect rounded'>" + name + "</span>");
+
+  // change class on click
+  el.click(function () {
+   $(this).toggleClass("clicked");
+  });
+
+  // remove on double click
+  el.dblclick(function () {
+   $(this).remove();
+  });
+
+  return el;
+};
+
+
+// get all select names
+function get_selected_names()
+{
+  var selected = $(".name.clicked");
+  var selected_names = selected.map(function() {
+    return $(this).text()
+  }).get()
+  return selected_names;
+}
+
+
+$(document).ready(function() {
+
+
+    // add new names when button is clicked
+    $("#btn-go").click(function() {
+        var n_namen = $("#n-namen").val()
+
+        $.ajax({
+            url: "http://localhost:8000/names",
+            type: "GET",
+            crossDomain: true,
+            data: {
+              n: n_namen
+            },
+            dataType: 'json',
+            success: function (response) {
+              console.log("API /echo call: success");
+
+              // add names to DOM
+              var names = response.names;
+              names.reverse().forEach(function(el, index) {
+                create_name_element(el).prependTo("#responses");
+              })
+            },
+            error: function (xhr, status) {
+                console.log("API /echo call: error");
+            }
+        });
+    });
+
+
+    // collect all clicked names and send to server
+    $("#btn-send").click(function() {
+      var names = get_selected_names();
+      console.log(names);
+
+      // send selected names to server
+      $.ajax({
+          url: "http://localhost:8000/names-selected",
+          type: "POST",
+          crossDomain: true,
+          data: JSON.stringify({
+            "names": names
+          }),
+          dataType: 'json',
+          contentType: 'application/json',
+          success: function (response) {
+            console.log("API /names-selected POST: success");
+            console.log(response);
+            $("#response").html(response.info);
+          },
+          error: function (xhr, status) {
+              console.log("API /names-selected call: error");
+          }
+      });
+
+      /*
+      // send results to server
+      $.ajax({
+          url: "http://localhost:8000/sum",
+          type: "POST",
+          crossDomain: true,
+          data: JSON.stringify( {
+            "a" : [1,2],
+            "b" : [2,3]
+          }),
+          dataType: 'json',
+          contentType: 'application/json',
+          success: function (response) {
+
+            console.log("API /sum POST: success");
+            console.log(response);
+          },
+          error: function (xhr, status) {
+              console.log("API /sum POST: error");
+          }
+      });
+    */
+    });
+
+
+    // bind <ENTER> to button execution
+    $(document).keypress(function(e) {
+        if (e.which == 13) {
+            $("#btn-go").click();
+        }
+    });
+
+});
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--- DUMMY --->

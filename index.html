@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+  <style>
+  .dropdiv {
+    width: 350px;
+    height: 80px;
+    padding: 5px;
+    border: 1px solid #aaa;
+    margin-bottom: 10px;
+    background-color: #ddd;
+  }
+  </style>
+
+</head>
+
+
+
+<body>
+  <button id="my-btn">Append</button>
+  <p id="my-text" style="color: blue;"> hello world </p>
+
+ <!--============== DRAG N DROP ===============-->
+
+  <div id="dropresult" class="dropdiv" style="background-color: #fff; font-family: monospace;"></div>
+
+  <div id="div1" class="dropdiv" ondrop="drop(event)" ondragover="allow_drop(event)"></div>
+  <div id="div2" class="dropdiv" ondrop="drop(event)" ondragover="allow_drop(event)"></div>
+  <div id="div3" class="dropdiv" ondrop="drop(event)" ondragover="allow_drop(event)"></div>
+  <div id="div4" class="dropdiv" ondrop="drop(event)" ondragover="allow_drop(event)"></div>
+
+  <img id="drag1" src="./img/db.jpg" draggable="true" ondragstart="drag(event)" width="80" height="80">
+
+</body>
+
+
+
+<script>
+$(document).ready(function() {
+
+  $("#my-btn")
+    .css({"color" : "blue"})
+    .click(function(){
+      $(document.body)
+        .append("<p>Neues rotes element</p>")
+        .css({"color": "red"})
+    });
+
+  $("#my-text")
+    .css({"color": "red"})
+    .click(function(){
+      $(this).css({"color": "green"})
+    })
+    .dblclick(function() {
+      $(this).text("test")
+    })
+});
+
+////////////////// DRAG N DROP //////////////////
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function allow_drop(ev) {
+  ev.preventDefault();
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  var data = ev.dataTransfer.getData("text");
+  ev.target.appendChild(document.getElementById(data));
+
+  // info text anpassen
+  $("#dropresult").text("Element with id '" + data + "' is now in box with id '" + ev.target.id + "'");
+}
+
+
+
+
+</script>
+
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- DUMMY -->
