@@ -1,5 +1,6 @@
 # plumber.R
 
+
 #* Echo back the input
 #* @param msg The message to echo
 #* @get /echo
@@ -27,6 +28,29 @@ function(n = 1) {
                      name.sep = " ", 
                      name.order = "first.last")  
   list(names = nms)
+}
+
+
+# generate random ids
+generate_id <- function(n) 
+{
+  replicate(n, paste(sample(LETTERS, 6, T), collapse = ""), simplify = T)  
+}
+
+
+#* return some random words including an id
+#* @param n The number of words
+#* @get /names2
+function(n = 1) {
+  
+  nms <- randomNames(n = n, 
+                     ethnicity = "White",
+                     name.sep = " ", 
+                     name.order = "first.last")  
+  ids <- generate_id(length(nms))
+  
+  data.frame(ids = ids, 
+             names = nms)
 }
 
 

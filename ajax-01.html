@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 
 
-<!--- HEAD ----------------------------------------------------->
+<!---***********************  HEAD *****************************--->
 
   <head>
 
@@ -15,17 +15,17 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 
-    <!--- CSS ----------------------------------------------------->
+      
+    <!---***********************  CSS *****************************--->
 
     <style>
 
     /* DOME name element */
     .name {
       background-color: #ddd;
-      margin-left: 5px;
-      margin-right: 5px;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin: 5px 5px;
+      display: inline-block;
+      padding: 1px 10px;
     }
 
     .name:hover {
@@ -51,37 +51,48 @@
   </head>
 
 
-  <!--- BODY ----------------------------------------------------->
+    
+<!---***********************  BODY *****************************--->
 
   <body>
-     <h1>APIs abfragen und darstellen</h1>
 
-     <div class="container" >
-       <div class="input-group">
-           <!-- <label for="stadt">Anzahl an neuen Namen</label> -->
-           <input id="n-namen" type="text" class="form-control" aria-describedby="stadt-help" placeholder="Anzahl ..." value = 10>
-           <!-- <small id="stadt-help" class="form-text text-muted">Anzahl an neuen Namen eingeben</small> -->
-           <span class="input-group-btn">
-             <button id="btn-go" type="button" class="btn btn-primary btn-lg">Hinzufügen</button>
-           </span>
-           <span class="input-group-btn">
-             <button id="btn-send" type="button" class="btn btn-success btn-lg">Auswerten</button>
-           </span>
-      </div>
+    <div class="container-fluid bg-primary py-2 mb-4 text-white">
+        <h1 class="text-center display-4">APIs abfragen und darstellen</h1>   
+    </div>  
+      
+    <div class="container bg-faded">
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <span class="input-group-btn">
+                <input id="n-namen" type="text" class="form-control" aria-describedby="stadt-help" placeholder="Anzahl ..." value = 10>
+                </span>
+            </div>
+            <div class="col-12 col-lg-6">   
+               <span class="input-group-btn">
+                 <button id="btn-go" type="button" class="btn btn-primary btn-lg">Hinzufügen</button>
+                 <button id="btn-send" type="button" class="btn btn-success btn-lg">Auswerten</button>
+                 <button id="btn-reset" type="button" class="btn btn-danger btn-lg">Reset</button>
+               </span>
+            </div>
 
-      <span id="response">... waiting</span>
+        </div>
 
     </div>
+    
+    <!-- status info -->
+    <div class="container bg-faded" >
+        <span id="response" class="lead">... waiting</span>
+        <hr>
+    </div>
 
-    <hr>
-
-    <div class = "container" id = "responses"></div>
+    <!-- display names -->
+    <div id="responses" class="container" ></div>
 
  </body>
 
+    
 
-
- <!--- SCRIPTS ----------------------------------------------------->
+<!---***********************  SCRIPTS *****************************--->
 
 <script>
 
@@ -89,7 +100,9 @@
 // create DOM name element
 function create_name_element(name)
 {
-  var el = $("<span class = 'name border noselect rounded'>" + name + "</span>");
+    
+  //var name = name.replace(/\s/g, '&nbsp;');
+  var el = $("<div class = 'name border noselect rounded'>" + name + "</div>");
 
   // change class on click
   el.click(function () {
@@ -118,13 +131,15 @@ function get_selected_names()
 
 $(document).ready(function() {
 
-
-    // add new names when button is clicked
+    /* 
+        add new names when button is clicked
+    */
+    
     $("#btn-go").click(function() {
         var n_namen = $("#n-namen").val()
 
         $.ajax({
-            url: "http://localhost:8000/names",
+            url: "http://localhost:8000/names2",
             type: "GET",
             crossDomain: true,
             data: {
@@ -135,19 +150,26 @@ $(document).ready(function() {
               console.log("API /echo call: success");
 
               // add names to DOM
+                //change to grouping by {id, name}
               var names = response.names;
               names.reverse().forEach(function(el, index) {
                 create_name_element(el).prependTo("#responses");
               })
+                
+            $("#response").html(names.length + " names delivered");
             },
             error: function (xhr, status) {
                 console.log("API /echo call: error");
+                $("#response").html("Connection failed");
             }
         });
     });
 
 
-    // collect all clicked names and send to server
+    /* 
+        collect all clicked names and send to server
+    */
+    
     $("#btn-send").click(function() {
       var names = get_selected_names();
       console.log(names);
@@ -172,6 +194,17 @@ $(document).ready(function() {
           }
       });
 
+        
+    /*
+        Reset: remove all divs and start anew
+    */
+        
+    $("#btn-reset").click(function() {
+        console.log("RESET names");
+        $("#response").html("Delete all names");
+        $("#responses .name").remove();
+    });
+        
       /*
       // send results to server
       $.ajax({
